@@ -1,5 +1,7 @@
 Format for making an agent
 Create a new python file and add its name to the respective import statement of GUI
+
+```python
 class Strategy:
   def best_strategy(self, board, player, best_move, still_running, time_limit):
     '''
@@ -9,3 +11,4 @@ class Strategy:
     still_running: variable used for debugging for threading issues, dwai
     time_limit: time in seconds that the agent has to set best_move.value (thread will be killed after this time)
     '''
+```
