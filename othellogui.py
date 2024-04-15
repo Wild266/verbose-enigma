@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from OthelloTJsiteh import Strategy
+from OthelloRANDOM import Strategy
 import threading
 import sys
 import time
