@@ -73,7 +73,7 @@ def string_to_board_states(moves, winner):
 
       x, y = move_to_index(move)
       if player == winner:
-        y_probabilities[x][y] = 1
+        y_probabilities[x][y] = 1.0
       else:
         # assign equal probabilities to all other legal moves for player
         num_legal_moves = 0
@@ -82,7 +82,11 @@ def string_to_board_states(moves, winner):
             if (p != x and q != y) and is_legal_move(current_board, (p,q), player):
               y_probabilities[p][q] = 1
               num_legal_moves += 1
-        y_probabilities = (np.array(y_probabilities) / num_legal_moves).tolist()
+
+        if num_legal_moves > 0:
+          y_probabilities = (np.array(y_probabilities) / num_legal_moves).tolist()
+        else:
+          y_probabilities[x][y] = 1.0
 
       board_states.append(([row[:] for row in current_board], player, y_probabilities))
       
