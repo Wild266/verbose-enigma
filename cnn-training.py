@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import layers, models
+from keras import layers, models
 import tensorflow as tf
 import pandas as pd
 import numpy as np
@@ -34,11 +34,12 @@ def preprocess_data(df):
 
 # Load data
 data = pd.read_csv('preprocessed_dataset.csv')
+
 train_df, test_df = train_test_split(data, test_size=0.2, random_state=42)
 X_train, y_train = preprocess_data(train_df)
 X_test, y_test = preprocess_data(test_df)
 
 # Create and train the model
 model = create_othello_cnn()
-history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, epochs=1, batch_size=32, validation_data=(X_test, y_test))
 model.save_weights('othello_model_weights.h5')
