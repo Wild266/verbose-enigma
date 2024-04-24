@@ -107,47 +107,15 @@ def pretty_print_board(board):
         print()
     print('  a b c d e f g h')
 
-
-def generate_states(moves, winner):
-  """ Generate all intermediate states from a game and the final outcome. """
-  board_states = string_to_board_states(moves, winner)
-  results = []
-  for state in board_states:
-    state_key = str(state)  # Convert the state to a string to use as a dictionary key
-    results.append((state_key, winner))
-  return results
-
-def calculate_win_probabilities(games):
-    """ Calculate the win probabilities for all states in all games. """
-    state_results = {}
-    
-    for _, game in games.iterrows():
-      moves = game['game_moves']
-      winner = int(game['winner'])
-      results = generate_states(moves, winner)
-      for state_key, result in results:
-        if state_key not in state_results:
-          state_results[state_key] = {'wins': 0, 'losses': 0, 'draws': 0, 'total': 0}
-        
-        if result == 1:  # Win for black
-          state_results[state_key]['wins'] += 1
-        elif result == -1:  # Win for white
-          state_results[state_key]['losses'] += 1
-        else:  # Draw
-          state_results[state_key]['draws'] += 1
-        
-        state_results[state_key]['total'] += 1
-
-    # Calculate probabilities
-    for state_key in state_results.keys():
-      state_info = state_results[state_key]
-      win_prob = state_info['wins'] / state_info['total'] if state_info['total'] > 0 else 0
-      state_results[state_key]['win_prob'] = win_prob
-
-    return state_results
-
+# preprocess dataset
 games = pd.read_csv('othello_dataset.csv')
-game_id, winner, moves_str = games.iloc[0]
-# state_probabilities = calculate_win_probabilities(games.head())
-# print(len(state_probabilities))
-board_states = string_to_board_states(moves_str[:10], winner)
+output = []
+for index, row in games.iterrows():
+  print(f"Starting Game {index+1}/{len(games)}")
+  moves = row['game_moves']
+  winner = row['winner']
+  board_states = string_to_board_states(moves, winner)
+  output += board_states
+
+output_df = pd.DataFrame(output, columns=['X', 'player', 'y'])
+output_df.to_csv('preprocessed_dataset.csv', index=False)
