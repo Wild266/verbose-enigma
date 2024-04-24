@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
@@ -30,7 +31,7 @@ def is_on_board(x, y):
 
 def is_legal_move(board, move, player):
     """Check if a move is legal for the given player on the board."""
-    x, y = move_to_index(move)
+    x, y = move
     if board[x][y] != 0:
       return False  # Cell is not empty
 
@@ -49,29 +50,45 @@ def is_legal_move(board, move, player):
 
     return False
 
-def string_to_board_states(moves):
+def string_to_board_states(moves, winner):
     """ Generate board states from a move string."""
     initial_board = [[0]*8 for _ in range(8)]
     initial_board[3][3] = initial_board[4][4] = -1  # White
     initial_board[3][4] = initial_board[4][3] = 1  # Black
     board_states = []
-    board_states.append(initial_board)
-
-    current_board = [row[:] for row in initial_board]
     player = 1  # Black moves first
+    current_board = [row[:] for row in initial_board]
 
     for i in range(0, len(moves), 2):
-        move = moves[i:i+2]
-        if is_legal_move(current_board, move, player):
-          apply_move(current_board, move, player)
-        else:
-          player = -player
-          if not is_legal_move(current_board, move, player):
-            break
-          else:
-            apply_move(current_board, move, player)
-        board_states.append([row[:] for row in current_board])
-        player = -player  # Switch player
+      y_probabilities = [[0]*8 for _ in range(8)]
+      move = moves[i:i+2]
+
+      if is_legal_move(current_board, move_to_index(move), player):
+        pass
+      else:
+        # player can't play, so this move is made by the other player
+        player = -player
+        if not is_legal_move(current_board, move_to_index(move), player):
+          break
+
+      x, y = move_to_index(move)
+      if player == winner:
+        y_probabilities[x][y] = 1
+      else:
+        # assign equal probabilities to all other legal moves for player
+        num_legal_moves = 0
+        for p in range(8):
+          for q in range(8):
+            if (p != x and q != y) and is_legal_move(current_board, (p,q), player):
+              y_probabilities[p][q] = 1
+              num_legal_moves += 1
+        y_probabilities = (np.array(y_probabilities) / num_legal_moves).tolist()
+
+      board_states.append(([row[:] for row in current_board], player, y_probabilities))
+      
+      # now apply the move and switch players to move on to the next state
+      apply_move(current_board, move, player)
+      player = -player
 
     return board_states
 
@@ -93,7 +110,7 @@ def pretty_print_board(board):
 
 def generate_states(moves, winner):
   """ Generate all intermediate states from a game and the final outcome. """
-  board_states = string_to_board_states(moves)
+  board_states = string_to_board_states(moves, winner)
   results = []
   for state in board_states:
     state_key = str(state)  # Convert the state to a string to use as a dictionary key
@@ -131,6 +148,6 @@ def calculate_win_probabilities(games):
 
 games = pd.read_csv('othello_dataset.csv')
 game_id, winner, moves_str = games.iloc[0]
-state_probabilities = calculate_win_probabilities(games.head())
-print(len(state_probabilities))
-# board_states = string_to_board_states(moves_str)
+# state_probabilities = calculate_win_probabilities(games.head())
+# print(len(state_probabilities))
+board_states = string_to_board_states(moves_str[:10], winner)
