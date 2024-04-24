@@ -1,12 +1,12 @@
 import pygame
 from pygame.locals import *
-from OthelloTJsitea import Strategy
+import importlib
 import threading
 import sys
 import time
 # Define constants
 
-TIME_LIMIT = 5
+
 CELL_SIZE = 60
 ROWS, COLS = 8, 8
 WHITE = (255, 255, 255)
@@ -43,18 +43,24 @@ class best_value:
       self.value = None
 
 class OthelloGame:
-    def __init__(self):
+    def __init__(self, agents, time_limit=5, time_limit2=5):
+        self.agents = agents
+        self.TIME_LIMIT = time_limit
+        self.TIME_LIMIT2 = time_limit2
         self.board = [['.' for _ in range(COLS)] for _ in range(ROWS)]
         self.board[3][3] = self.board[4][4] = 'o'
         self.board[3][4] = self.board[4][3] = 'x'
         self.current_player = 'x'
-        self.strategy = Strategy()
+        self.strategy = importlib.import_module(agents[0]).Strategy()
+        self.strategy2 = importlib.import_module(agents[1]).Strategy()
         self.best_move = None
         self.running = True
         self.turn_complete = False
         self.best_move = best_value()
         self.stop_thread = threading.Event()  # Event to signal thread to stop
         self.running = True  # Initialize running attribute
+        self.score1 = 0
+        self.score2 = 0
 
     def draw_board(self, screen):
         screen.fill(GREEN)
@@ -126,8 +132,10 @@ class OthelloGame:
 
 
     def ai_move_thread(self):
-        self.strategy.best_strategy(''.join(''.join(self.board[i]) for i in range(COLS)), self.current_player, self.best_move, self.running, 5)
+        self.strategy.best_strategy(''.join(''.join(self.board[i]) for i in range(COLS)), self.current_player, self.best_move, self.running, self.TIME_LIMIT)
 
+    def ai_move_thread2(self):
+        self.strategy2.best_strategy(''.join(''.join(self.board[i]) for i in range(COLS)), self.current_player, self.best_move, self.running, self.TIME_LIMIT2)
             
     def run(self):
         game_end = 0
@@ -136,43 +144,73 @@ class OthelloGame:
         pygame.display.set_caption('Othello Game')
 
         while self.running:
-            # if len([self.is_valid_move(row, col) for row in range(ROWS) for col in range(COLS)])==0:
-            #         print("NO MOves")
-            #         break
-            for event in pygame.event.get():
-                # print(event.type)
-                # print(event.type == QUIT)
+            if self.current_player == 'x' and not self.turn_complete:
+                # if len([self.is_valid_move(row, col) for row in range(ROWS) for col in range(COLS)])==0:
+                #         print("NO MOves")
+                #         break
+                # for event in pygame.event.get():
+                #     # print(event.type)
+                #     # print(event.type == QUIT)
                 l =[]
                 for row in range(ROWS):
                     for col in range(COLS):
                         if self.is_valid_move(row, col):
                             l.append((row, col))
                 if len(l)==0:
-                    print("No Moves for Human")
+                    print("No Moves for AI2")
                     game_end +=1
                     self.turn_complete = True
                     self.current_player = 'o' if self.current_player == 'x' else 'x'
-                    break
+                    continue
                 else:
                     if game_end == 1:
                         game_end = 0
-                if event.type == QUIT:
+                #     if event.type == QUIT:
+                #         self.running = False
+                #     elif not self.turn_complete:
+                #         self.best_move = best_value()
+
+                # if len([self.is_valid_move(row, col) for row in range(ROWS) for col in range(COLS)])==0:
+                #     winner = self.check_winner()
+                # # if winner != 'Draw':
+                #     print(f"Winner: {winner}")
+                #     self.running = False
+                #     print("fix1")
+                #     continue
+
+                # Run AI move in a separate thread with time limit
+                ai_thread = StoppableThread(target=self.ai_move_thread2, time_limit=self.TIME_LIMIT2)
+                ai_thread.start()
+                ai_thread.join()  # Timeout after 5 seconds
+                
+                if ai_thread.is_alive():  # AI thread is still running after timeout
+                    print("AI2 move timed out")
+                    ai_thread.stop()
+
+    #                     self.stop_thread.set()  # Set the stop_thread flag to stop the AI thread
+                    
+                print(f'Best Value: {self.best_move.value}')
+                if self.best_move.value is not None:
+                    self.make_move(self.best_move.value // COLS, self.best_move.value % COLS)
+                self.turn_complete = True
+                print(f'AI2 move: {self.best_move.value // COLS}, {self.best_move.value % COLS}')
+                self.draw_board(screen)
+                pygame.display.flip()
+                        # mouse_pos = pygame.mouse.get_pos()
+                        # row, col = self.get_click_pos(mouse_pos)
+                        # if 0 <= row < ROWS and 0 <= col < COLS and self.board[row][col] == '.' and self.is_valid_move(row, col):
+                        #     self.make_move(row, col)
+                        #     self.turn_complete = True
+                        #     print(f'Player move: {row}, {col}')
+                        # else: continue
+                
+                self.draw_board(screen)
+                pygame.display.flip()
+                if len([self.is_valid_move(row, col) for row in range(ROWS) for col in range(COLS)])==0:
+                    winner = self.check_winner()
+                # if winner != 'Draw':
+                    print(f"Winner: {winner}")
                     self.running = False
-                elif event.type == MOUSEBUTTONDOWN and not self.turn_complete:
-                    mouse_pos = pygame.mouse.get_pos()
-                    row, col = self.get_click_pos(mouse_pos)
-                    if 0 <= row < ROWS and 0 <= col < COLS and self.board[row][col] == '.' and self.is_valid_move(row, col):
-                        self.make_move(row, col)
-                        self.turn_complete = True
-                        print(f'Player move: {row}, {col}')
-                    else: continue
-            self.draw_board(screen)
-            pygame.display.flip()
-            if len([self.is_valid_move(row, col) for row in range(ROWS) for col in range(COLS)])==0:
-                winner = self.check_winner()
-            # if winner != 'Draw':
-                print(f"Winner: {winner}")
-                self.running = False
             # AI's turn
             if self.current_player == 'o' and self.turn_complete:
                 l =[]
@@ -198,7 +236,7 @@ class OthelloGame:
                 
 
                 # Run AI move in a separate thread with time limit
-                ai_thread = StoppableThread(target=self.ai_move_thread, time_limit=TIME_LIMIT)
+                ai_thread = StoppableThread(target=self.ai_move_thread, time_limit=self.TIME_LIMIT)
                 ai_thread.start()
                 ai_thread.join()  # Timeout after 5 seconds
                 
@@ -219,9 +257,18 @@ class OthelloGame:
             # if winner != 'Draw':
                 print(f"Winner: {winner}")
                 self.running = False
-
+                
+        b = ''.join(''.join(self.board[i]) for i in range(COLS))
+        self.score2 = b.count('x')-b.count('o')
+        self.score1 = b.count('o')-b.count('x')
         pygame.quit()
         
+'''        
 if __name__ == '__main__':
-    game = OthelloGame()
+    game = OthelloGame(['OthelloRANDOM', 'OthelloTJsiteh'][::1], time_limit=.5, time_limit2=.5)
     game.run()
+    if game.check_winner() == 'x':
+        print(f"{game.agents[1]} wins")
+    else:
+        print(f"{game.agents[0]} wins")
+'''
