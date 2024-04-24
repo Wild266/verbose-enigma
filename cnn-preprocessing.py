@@ -1,71 +1,96 @@
 import pandas as pd
 
-def move_to_index(move):
-  """ Convert board notation to index."""
-  return (ord(move[0]) - ord('a'), int(move[1]) - 1)
+directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
 def move_to_index(move):
-    # Convert move notation to board indices
-    col = ord(move[0]) - ord('a')
-    row = 8 - int(move[1])  # The board is printed with row 1 at the bottom
-    return row, col
-
-def on_board(x, y):
-    # Check if the position is on the board
-    return 0 <= x < 8 and 0 <= y < 8
+    """ Convert board notation to index."""
+    idx = (int(move[1]) - 1, ord(move[0]) - ord('a'))
+    print(idx)
+    return idx
 
 def apply_move(board, move, player):
-    # Apply a move and flip the pieces
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-    row, col = move_to_index(move)
-    board[row][col] = player  # Place the piece
+    """ Apply a move to the board, assuming the move is valid. """
+    x, y = move_to_index(move)
+    board[x][y] = player
 
-    for dr, dc in directions:
-        r, c = row + dr, col + dc
+    # Flip opponent's pieces
+    for dx, dy in directions:
+        nx, ny = x + dx, y + dy
         pieces_to_flip = []
-        while on_board(r, c) and board[r][c] == -player:
-            pieces_to_flip.append((r, c))
-            r += dr
-            c += dc
+        while 0 <= nx < 8 and 0 <= ny < 8 and board[nx][ny] == -player:
+            pieces_to_flip.append((nx, ny))
+            nx += dx
+            ny += dy
+        if 0 <= nx < 8 and 0 <= ny < 8 and board[nx][ny] == player:
+            for px, py in pieces_to_flip:
+                board[px][py] = player
 
-        if on_board(r, c) and board[r][c] == player:
-            for pr, pc in pieces_to_flip:
-                board[pr][pc] = player
+def is_on_board(x, y):
+    """Check if the (x, y) coordinates are on the board."""
+    return 0 <= x < 8 and 0 <= y < 8
 
-    return board
+def is_legal_move(board, move, player):
+    """Check if a move is legal for the given player on the board."""
+    x, y = move_to_index(move)
+    if board[x][y] != 0:
+      return False  # Cell is not empty
+
+    for dx, dy in directions:
+      nx, ny = x + dx, y + dy
+      has_opponent_piece = False
+      while is_on_board(nx, ny) and board[nx][ny] != 0 and board[nx][ny] != player:
+        nx += dx
+        ny += dy
+        if is_on_board(nx, ny) and board[nx][ny] == player:
+          has_opponent_piece = True
+          break
+
+      if has_opponent_piece:
+          return True
+
+    return False
 
 def string_to_board_states(moves):
-  """ Generate board states from a move string."""
-  initial_board = [[0]*8 for _ in range(8)]
-  initial_board[3][3] = initial_board[4][4] = 1
-  initial_board[3][4] = initial_board[4][3] = -1
-  board_states = []
-  
-  current_board = [row[:] for row in initial_board]
-  player = -1  # Black moves first
+    """ Generate board states from a move string."""
+    initial_board = [[0]*8 for _ in range(8)]
+    initial_board[3][3] = initial_board[4][4] = -1  # White
+    initial_board[3][4] = initial_board[4][3] = 1  # Black
+    board_states = []
+    board_states.append(initial_board)
 
-  for i in range(0, len(moves), 2):
-    move = moves[i:i+2]
-    apply_move(current_board, move, player)
-    board_states.append([row[:] for row in current_board])
-    player = -player  # Switch player
+    current_board = [row[:] for row in initial_board]
+    player = 1  # Black moves first
 
-  return board_states
+    for i in range(0, len(moves), 2):
+        move = moves[i:i+2]
+        if is_legal_move(current_board, move, player):
+          apply_move(current_board, move, player)
+        else:
+          player = -player
+          if not is_legal_move(current_board, move, player):
+            break
+          else:
+            apply_move(current_board, move, player)
+        board_states.append([row[:] for row in current_board])
+        player = -player  # Switch player
+
+    return board_states
 
 def pretty_print_board(board):
     # Pretty-print the board
-    print('  a b c d e f g h')
     for i in range(8):
-        print(str(8 - i) + ' ', end='')  # Print the row number
+        print(str(i+1) + ' ', end='')  # Print the row number
         for j in range(8):
             piece = board[i][j]
             if piece == 1:
-                print('W', end=' ')
-            elif piece == -1:
                 print('B', end=' ')
+            elif piece == -1:
+                print('W', end=' ')
             else:
                 print('.', end=' ')
         print()
+    print('  a b c d e f g h')
+
 
 def generate_states(moves, winner):
   """ Generate all intermediate states from a game and the final outcome. """
@@ -103,10 +128,12 @@ def calculate_win_probabilities(games):
 
     return state_results
 
-games = pd.read_csv('othello_dataset.csv')
-game_id, winner, moves_str = games.iloc[0]
+# games = pd.read_csv('othello_dataset.csv')
+# game_id, winner, moves_str = games.iloc[0]
 # state_probabilities = calculate_win_probabilities(list(games['game_moves']))
-print(moves_str)
+moves_str = 'f5d6c4d3e6f4e3f6c5b4e7f3c6d7b5a5c3b3g5h5g4h4e2g6b6d8c7c8a4a6a7f1a3c2d2b2e1b7g3h3f2d1a1a2b1a8c1g1f7g8e8f8b8g7h8h7h6h2g2h1'
 board_states = string_to_board_states(moves_str)
-print(game_id)
-pretty_print_board(board_states[-1])
+# print(game_id)
+for b in board_states:
+  pretty_print_board(b)
+  print()
