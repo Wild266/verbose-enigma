@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from OthelloRANDOM import Strategy
+from montecarlo import MonteCarloStrategy
 import threading
 import sys
 import time
@@ -48,7 +49,7 @@ class OthelloGame:
         self.board[3][3] = self.board[4][4] = 'o'
         self.board[3][4] = self.board[4][3] = 'x'
         self.current_player = 'x'
-        self.strategy = Strategy()
+        self.strategy = MonteCarloStrategy()
         self.best_move = None
         self.running = True
         self.turn_complete = False
