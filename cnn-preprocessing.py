@@ -5,7 +5,6 @@ directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 
 def move_to_index(move):
     """ Convert board notation to index."""
     idx = (int(move[1]) - 1, ord(move[0]) - ord('a'))
-    print(idx)
     return idx
 
 def apply_move(board, move, player):
@@ -105,7 +104,9 @@ def calculate_win_probabilities(games):
     """ Calculate the win probabilities for all states in all games. """
     state_results = {}
     
-    for moves, winner in games:
+    for _, game in games.iterrows():
+      moves = game['game_moves']
+      winner = int(game['winner'])
       results = generate_states(moves, winner)
       for state_key, result in results:
         if state_key not in state_results:
@@ -128,12 +129,8 @@ def calculate_win_probabilities(games):
 
     return state_results
 
-# games = pd.read_csv('othello_dataset.csv')
-# game_id, winner, moves_str = games.iloc[0]
-# state_probabilities = calculate_win_probabilities(list(games['game_moves']))
-moves_str = 'f5d6c4d3e6f4e3f6c5b4e7f3c6d7b5a5c3b3g5h5g4h4e2g6b6d8c7c8a4a6a7f1a3c2d2b2e1b7g3h3f2d1a1a2b1a8c1g1f7g8e8f8b8g7h8h7h6h2g2h1'
-board_states = string_to_board_states(moves_str)
-# print(game_id)
-for b in board_states:
-  pretty_print_board(b)
-  print()
+games = pd.read_csv('othello_dataset.csv')
+game_id, winner, moves_str = games.iloc[0]
+state_probabilities = calculate_win_probabilities(games.head())
+print(len(state_probabilities))
+# board_states = string_to_board_states(moves_str)
