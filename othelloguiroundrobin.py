@@ -1,8 +1,8 @@
 from othellogui_copy2 import OthelloGame
 
-players = ['OthelloRANDOM', 'OthelloTJsiteh', 'OthelloTJsitef', 'OthelloTJsitea']
+players = ['OthelloRANDOM', 'OthelloTJsiteh']
 
-def run_game(agents, time_limit1=.5, time_limit12=.5):
+def run_game(agents, time_limit1=10, time_limit12=10):
     game = OthelloGame(agents, time_limit=time_limit1, time_limit2=time_limit12)
     game.run()
     if game.check_winner() == 'x':
@@ -22,20 +22,20 @@ def run_roundRobin(players):
         g2 = run_game([player2, player1])
         if g1[0] == 1:
             scores[player2] += 1
-            avg_poss[player2] += g1[1]/(len(players)-1)
-            avg_poss[player1] -= g1[1]/(len(players)-1)
+            avg_poss[player2] += g1[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player1] -= g1[1]/(len(players)/((len(players)-1)/2))
         else:
             scores[player1] += 1
-            avg_poss[player2] -= g1[1]/(len(players)-1)
-            avg_poss[player1] += g1[1]/(len(players)-1)
+            avg_poss[player2] -= g1[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player1] += g1[1]/(len(players)/((len(players)-1)/2))
         if g2[0] == 1:
             scores[player1] += 1
-            avg_poss[player1] += g2[1]/(len(players)-1)
-            avg_poss[player2] -= g2[1]/(len(players)-1)
+            avg_poss[player1] += g2[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player2] -= g2[1]/(len(players)/((len(players)-1)/2))
         else:
             scores[player2] += 1
-            avg_poss[player1] -= g2[1]/(len(players)-1)
-            avg_poss[player2] += g2[1]/(len(players)-1)
+            avg_poss[player1] -= g2[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player2] += g2[1]/(len(players)/((len(players)-1)/2))
     return [scores, avg_poss]
 
 def run_roundRobinNtimes(players, n):
@@ -60,7 +60,7 @@ def print_avg_poss(avg_poss):
     for player, avg_pos in sorted_avg_poss:
         print(f'{player}: {avg_pos}')
 
-s = run_roundRobinNtimes(players, 1)
+s = run_roundRobinNtimes(players, 3)
 scores = s[0]
 avg_poss = s[1]
 print(f'\n\n\nWIN RANKINGS:\n______________________\n')
