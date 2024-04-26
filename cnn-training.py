@@ -58,15 +58,19 @@ def preprocess_data(df):
 data = pd.read_csv('preprocessed_dataset.csv')
 
 train_df, test_df = train_test_split(data, test_size=0.2, random_state=42)
-X_train, y_train = preprocess_data(train_df)
-X_test, y_test = preprocess_data(test_df)
+#X_train, y_train = preprocess_data(train_df)
+X_test, y_test = preprocess_data(test_df[:1])
+print('Data ready')
 
-# Create and train the model
-model = create_othello_cnn()
-history = model.fit(X_train, y_train, epochs=1, batch_size=32, validation_data=(X_test, y_test))
-model.save_weights('othello_model.weights.h5')
-
+# # Create and train the model
 # model = create_othello_cnn()
-# model.load_weights('othello_model_weights.h5')
-# new_data_preprocessed = preprocess_new_data(new_data)
-# predictions = model.predict(new_data_preprocessed)
+# history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+# model.save_weights('othello_model.weights.h5')
+
+model = create_othello_cnn()
+print('Model created')
+model.load_weights('othello_model.weights.h5')
+print('Weights loaded')
+prediction = model.predict(X_test[0])
+print(X_test[0])
+print(prediction)
