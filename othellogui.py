@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from OthelloRANDOM import Strategy
+from OthelloMCTS1 import Strategy
 import threading
 import sys
 import time
@@ -198,6 +198,7 @@ class OthelloGame:
                 
 
                 # Run AI move in a separate thread with time limit
+                print("Starting AI move computation...")
                 ai_thread = StoppableThread(target=self.ai_move_thread, time_limit=TIME_LIMIT)
                 ai_thread.start()
                 ai_thread.join()  # Timeout after 5 seconds
