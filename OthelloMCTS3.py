@@ -84,7 +84,7 @@ class Strategy:
 
     def evaluate_board(self, board, player):
         opponent = 'o' if player == 'x' else 'x'
-        score_values = {'corner': 10, 'edge': 5, 'other': 1}
+        score_values = {'corner': 5, 'edge': 5, 'other': 10}
         player_score = 0
         opponent_score = 0
 

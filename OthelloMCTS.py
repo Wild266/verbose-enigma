@@ -1,19 +1,19 @@
+# Aknazar Janibek Othello Agent
 import time
 
 class Strategy:
     DIRECTIONS = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-    
     def __init__(self):
         self.board = None
 
     def best_strategy(self, board, player, best_move, still_running, time_limit):
         if self.board is None:
-            self.board = [list(board[i:i+8]) for i in range(0, 64, 8)]
-        moves = self.valid_moves(self.board, player)
+            board = [list(board[i:i+8]) for i in range(0, 64, 8)]
+        moves = self.valid_moves(board, player)
         if not moves:
             best_move.value = None
         else:
-            best_move.value = self.mcts(self.board, moves, player, time_limit, time.time())
+            best_move.value = self.mcts(board, moves, player, time_limit, time.time())
 
     def mcts(self, board, moves, player, time_limit, start_time):
         best_score = float('-inf')
@@ -28,7 +28,7 @@ class Strategy:
     def simulate_move(self, board, move, player, allocated_time, start_time):
         score = 0
         trials = 0
-        target_trials = 500
+        target_trials = min(500, allocated_time / 0.1)
         while trials < target_trials:
             score += self.simulate(board, move, player)
             trials += 1
@@ -84,27 +84,25 @@ class Strategy:
 
     def evaluate_board(self, board, player):
         opponent = 'o' if player == 'x' else 'x'
-        score_values = {'corner': 25, 'edge': 5,'other': 1}
+        score_values = {'corner': 1, 'edge': 1, 'other': 1}
         player_score = 0
         opponent_score = 0
 
         for r in range(8):
             for c in range(8):
-                value = score_values['other']
-                if (r, c) in [(0, 0), (0, 7), (7, 0), (7, 7)]:
-                    value = score_values['corner']
-                elif r in [0, 7] or c in [0, 7]:
-                    value = score_values['edge']
-
                 if board[r][c] == player:
-                    player_score += value
+                    if (r, c) in [(0, 0), (0, 7), (7, 0), (7, 7)]:
+                        player_score += score_values['corner']
+                    elif r in [0, 7] or c in [0, 7]:
+                        player_score += score_values['edge']
+                    else:
+                        player_score += score_values['other']
                 elif board[r][c] == opponent:
-                    opponent_score += value
+                    if (r, c) in [(0, 0), (0, 7), (7, 0), (7, 7)]:
+                        opponent_score += score_values['corner']
+                    elif r in [0, 7] or c in [0, 7]:
+                        opponent_score += score_values['edge']
+                    else:
+                        opponent_score += score_values['other']
 
-        # # Adding a mobility heuristic
-        # player_mobility = len(self.valid_moves(board, player))
-        # opponent_mobility = len(self.valid_moves(board, opponent))
-        # mobility_score = (player_mobility - opponent_mobility)
-
-        return player_score - opponent_score 
-
+        return player_score - opponent_score
