@@ -95,8 +95,6 @@ class Strategy:
                     value = score_values['corner']
                 elif r in [0, 7] or c in [0, 7]:
                     value = score_values['edge']
-                elif (r, c) in [(0, 1), (1, 0), (1, 1), (0, 6), (1, 7), (1, 6), (6, 0), (7, 1), (6, 1), (6, 7), (7, 6), (6, 6)]:
-                    value = score_values['near_corner']
 
                 if board[r][c] == player:
                     player_score += value

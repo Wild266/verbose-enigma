@@ -1,6 +1,6 @@
 from othellogui_copy2 import OthelloGame
 
-players = ['OthelloRANDOM', 'OthelloMCTS1']
+players = ['OthelloMCTS', 'OthelloMCTS1']
 
 def run_game(agents, time_limit1=10, time_limit12=10):
     game = OthelloGame(agents, time_limit=time_limit1, time_limit2=time_limit12)

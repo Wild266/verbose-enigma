@@ -28,7 +28,7 @@ class Strategy:
     def simulate_move(self, board, move, player, allocated_time, start_time):
         score = 0
         trials = 0
-        target_trials = 500
+        target_trials = min(500, allocated_time / 0.1)
         while trials < target_trials:
             score += self.simulate(board, move, player)
             trials += 1
