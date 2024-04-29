@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from sklearn.metrics import accuracy_score, log_loss, classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 from keras import layers, models
@@ -63,8 +65,9 @@ X_test, y_test = preprocess_data(test_df)
 
 # Create and train the model
 model = create_othello_cnn()
-history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
-model.save_weights('/work/users/j/a/jackg/othello_model.weights.h5')
+history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+# model.save_weights('/work/users/j/a/jackg/othello_model.weights.h5')
+model.save('/work/users/j/a/jackg/othello_model_full.h5')
 
 # Predict on the test set
 predictions = model.predict(X_test)
@@ -73,13 +76,11 @@ true_classes = np.argmax(y_test, axis=1)
 
 # Calculate metrics
 accuracy = accuracy_score(true_classes, predicted_classes)
-cross_entropy_loss = log_loss(true_classes, predicted_classes)
 report = classification_report(true_classes, predicted_classes, target_names=[f"Move {i+1}" for i in range(64)])
 
 # Open a file to save the outputs
 with open('/work/users/j/a/jackg/othello_model_evaluation_report.txt', 'w') as f:
   f.write(f"Accuracy: {accuracy}\n")
-  f.write(f"Cross-Entropy Loss: {cross_entropy_loss}\n")
   f.write("Classification Report:\n")
   f.write(report + "\n")
 
