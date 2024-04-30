@@ -22,20 +22,20 @@ def run_roundRobin(players):
         g2 = run_game([player2, player1])
         if g1[0] == 1:
             scores[player2] += 1
-            avg_poss[player2] += g1[1]/(len(players)/((len(players)-1)/2))
-            avg_poss[player1] -= g1[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player2] += g1[1]/(len(matchings*2))
+            avg_poss[player1] -= g1[1]/(len(matchings*2))
         else:
             scores[player1] += 1
-            avg_poss[player2] -= g1[1]/(len(players)/((len(players)-1)/2))
-            avg_poss[player1] += g1[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player2] -= g1[1]/(len(matchings*2))
+            avg_poss[player1] += g1[1]/(len(matchings*2))
         if g2[0] == 1:
             scores[player1] += 1
-            avg_poss[player1] += g2[1]/(len(players)/((len(players)-1)/2))
-            avg_poss[player2] -= g2[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player1] += g2[1]/(len(matchings*2))
+            avg_poss[player2] -= g2[1]/(len(matchings*2))
         else:
             scores[player2] += 1
-            avg_poss[player1] -= g2[1]/(len(players)/((len(players)-1)/2))
-            avg_poss[player2] += g2[1]/(len(players)/((len(players)-1)/2))
+            avg_poss[player1] -= g2[1]/(len(matchings*2))
+            avg_poss[player2] += g2[1]/(len(matchings*2))
     return [scores, avg_poss]
 
 def run_roundRobinNtimes(players, n):
