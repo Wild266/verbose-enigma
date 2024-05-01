@@ -1,4 +1,4 @@
-from tensorflow.keras.models import load_model
+from keras import models
 import numpy as np
 import time
 
@@ -23,12 +23,8 @@ class Strategy:
     input_tensor = np.expand_dims(input_tensor, axis=0)
     
     # load model
-    model = load_model('othello_model_full.h5')
+    model = models.load_model('othello_model_full.h5')
 
     # make prediction about next best move
     predictions = model.predict(input_tensor)
     best_move.value = np.argmax(predictions[0])
-
-
-
-    
