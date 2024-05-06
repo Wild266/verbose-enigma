@@ -1,4 +1,4 @@
-import copy
+import numpy as np
 
 directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
@@ -31,7 +31,8 @@ def get_legal_moves(board, player):
       for j in range(8):
          move = (i, j)
          if is_legal_move(board, move, player):
-            moves.append(i, j)
+            moves.append(move)
+   return moves
 
 def count_tiles(board, player):
    tiles = 0
@@ -44,11 +45,22 @@ def count_tiles(board, player):
 def make_minimax_move(board, player):
    best_score = float('-inf')
    best_move = None
-   # copy board for the minimax algorithm to avoid modifying original board
-   temp_board = copy.deepcopy(board)
-   for move in get_legal_moves(temp_board, player):
+
+   # convert board and player strings to numbers to be passed to model
+   board_array = np.zeros((8, 8))
+   count = 0
+   for i in range(8):
+      for j in range(8):
+         if board[count] == 'x':
+            board_array[i][j] = 1
+         elif board[count] == 'o':
+            board_array[i][j] = -1
+         count += 1
+   player_for_model = 1 if player == 'x' else -1
+
+   for move in get_legal_moves(board_array, player_for_model):
       # Assuming minimax depth and maximizing player initial call
-      score = minimax(move, temp_board, player, 2, False)
+      score = minimax(move, board_array, player_for_model, 2, False)
       if score > best_score:
             best_score = score
             best_move = move
@@ -57,7 +69,7 @@ def make_minimax_move(board, player):
 
 def minimax(move, board, player, depth, is_maximizing):
    if depth == 0 or len(get_legal_moves(board, player)) == 0:
-      return evaluate_heuristic()
+      return evaluate_heuristic(board, player)
    
    if is_maximizing:
       best_score = float('-inf')
@@ -70,10 +82,10 @@ def minimax(move, board, player, depth, is_maximizing):
       return best_score
    else:
       best_score = float('inf')
-      for new_move in get_legal_moves():
+      for new_move in get_legal_moves(board, player):
          old_state = board[new_move[0]][new_move[1]]
          board[new_move[0]][new_move[1]] = player
-         score = minimax(new_move, depth - 1, True)
+         score = minimax(new_move, board, player, depth - 1, True)
          board[new_move[0]][new_move[1]] = old_state  # Undo move
          best_score = min(best_score, score)
       return best_score

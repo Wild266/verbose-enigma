@@ -1,6 +1,6 @@
 from othellogui_copy2 import OthelloGame
 
-players = ['OthelloRANDOM', 'OthelloTJsiteh']
+players = ['OthelloTJsiteh', 'OthelloOtherGroup']
 
 def run_game(agents, time_limit1=10, time_limit12=10):
     game = OthelloGame(agents, time_limit=time_limit1, time_limit2=time_limit12)
@@ -42,6 +42,7 @@ def run_roundRobinNtimes(players, n):
     scores = {player: 0 for player in players}
     avg_poss = {player: 0 for player in players}
     for i in range(n):
+        print(f"Running round robin {i+1}/{n}")
         o = run_roundRobin(players)
         scores_i = o[0]
         poss_i = o[1]
@@ -60,7 +61,7 @@ def print_avg_poss(avg_poss):
     for player, avg_pos in sorted_avg_poss:
         print(f'{player}: {avg_pos}')
 
-s = run_roundRobinNtimes(players, 3)
+s = run_roundRobinNtimes(players, 50)
 scores = s[0]
 avg_poss = s[1]
 print(f'\n\n\nWIN RANKINGS:\n______________________\n')
